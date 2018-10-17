@@ -1,18 +1,18 @@
 package com.atlassian.performance.tools.virtualusers
 
-import com.atlassian.performance.tools.concurrency.api.representsInterrupt
 import com.atlassian.performance.tools.jiraactions.api.WebJira
 import com.atlassian.performance.tools.jiraactions.api.action.Action
 import com.atlassian.performance.tools.jiraactions.api.action.LogInAction
 import com.atlassian.performance.tools.jiraactions.api.action.SetUpAction
 import com.atlassian.performance.tools.jvmtasks.api.Backoff
 import com.atlassian.performance.tools.jvmtasks.api.IdempotentAction
+import com.atlassian.performance.tools.virtualusers.action.DiagnosingAction
+import com.atlassian.performance.tools.virtualusers.action.ShakyAction
 import com.atlassian.performance.tools.virtualusers.api.diagnostics.Diagnostics
 import com.atlassian.performance.tools.virtualusers.collections.CircularIterator
 import com.atlassian.performance.tools.virtualusers.measure.JiraNodeCounter
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import java.lang.Thread.currentThread
 import java.lang.Thread.interrupted
 import java.time.Duration
 
@@ -33,8 +33,8 @@ internal class ExploratoryVirtualUser(
 
     fun setUpJira() {
         logger.info("Setting up Jira...")
-        runWithDiagnostics(logInAction)
-        runWithDiagnostics(setUpAction)
+        DiagnosingAction(logInAction, diagnostics).run()
+        DiagnosingAction(setUpAction, diagnostics).run()
         logger.info("Jira is set up")
     }
 
@@ -49,15 +49,7 @@ internal class ExploratoryVirtualUser(
         val actionNames = actions.map { it.javaClass.simpleName }
         logger.debug("Circling through $actionNames")
         for (action in CircularIterator(actions)) {
-            try {
-                runWithDiagnostics(action)
-            } catch (e: Exception) {
-                if (e.representsInterrupt()) {
-                    currentThread().interrupt()
-                } else {
-                    logger.error("Failed to run $action, but we keep running", e)
-                }
-            }
+            ShakyAction(DiagnosingAction(action, diagnostics)).run()
             if (interrupted()) {
                 logger.info("Scenario finished on cue")
                 break
@@ -67,27 +59,12 @@ internal class ExploratoryVirtualUser(
 
     private fun logIn() {
         IdempotentAction("log in") {
-            runWithDiagnostics(logInAction)
+            DiagnosingAction(logInAction, diagnostics).run()
         }.retry(
             backoff = StaticBackoff(Duration.ofSeconds(5)),
             maxAttempts = loginRetryLimit
         )
     }
-
-    private fun runWithDiagnostics(
-        action: Action
-    ) {
-        try {
-            logger.trace("Running $action")
-            action.run()
-        } catch (e: Exception) {
-            if (e.representsInterrupt().not()) {
-                diagnostics.diagnose(e)
-            }
-            throw Exception("Failed to run $action", e)
-        }
-    }
-
 }
 
 private class StaticBackoff(
