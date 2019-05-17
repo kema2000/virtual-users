@@ -36,6 +36,13 @@ class LoadTestTerminationIT {
         .flat(Duration.ofSeconds(21))
         .build()
 
+    private val jmeterLoad = VirtualUserLoad.Builder()
+        .virtualUsers(3)
+        .hold(Duration.ZERO)
+        .ramp(Duration.ZERO)
+        .flat(Duration.ofSeconds(5))
+        .build()
+
     @Test
     fun shouldHaveReasonableOverheadDespiteSlowNavigations() {
         val loadTest = prepareLoadTest(SlowShutdownBrowser::class.java)
@@ -70,6 +77,7 @@ class LoadTestTerminationIT {
                 .skipSetup(true)
                 .browser(browser)
                 .load(load)
+                .jmeterLoad(jmeterLoad)
                 .build()
         )
         return LoadTest(

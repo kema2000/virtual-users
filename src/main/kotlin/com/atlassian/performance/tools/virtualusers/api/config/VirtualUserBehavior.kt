@@ -12,6 +12,8 @@ class VirtualUserBehavior private constructor(
     internal val help: Boolean,
     internal val scenario: Class<out Scenario>,
     val load: VirtualUserLoad,
+    val jmeterLoadEnabled : Boolean = false,
+    val jmeterLoad: VirtualUserLoad,
     internal val seed: Long,
     internal val diagnosticsLimit: Int,
     internal val browser: Class<out Browser>,
@@ -26,6 +28,7 @@ class VirtualUserBehavior private constructor(
         help: Boolean,
         scenario: Class<out Scenario>,
         load: VirtualUserLoad,
+        jmeterLoad: VirtualUserLoad,
         seed: Long,
         diagnosticsLimit: Int,
         browser: Class<out Browser>,
@@ -34,6 +37,7 @@ class VirtualUserBehavior private constructor(
         help = help,
         scenario = scenario,
         load = load,
+        jmeterLoad = jmeterLoad,
         seed = seed,
         diagnosticsLimit = diagnosticsLimit,
         browser = browser,
@@ -49,6 +53,7 @@ class VirtualUserBehavior private constructor(
         help: Boolean,
         scenario: Class<out Scenario>,
         load: VirtualUserLoad,
+        jmeterLoad: VirtualUserLoad,
         seed: Long,
         diagnosticsLimit: Int,
         browser: Class<out Browser>
@@ -56,6 +61,7 @@ class VirtualUserBehavior private constructor(
         help = help,
         scenario = scenario,
         load = load,
+        jmeterLoad = jmeterLoad,
         seed = seed,
         diagnosticsLimit = diagnosticsLimit,
         browser = browser,
@@ -69,6 +75,7 @@ class VirtualUserBehavior private constructor(
     constructor(
         scenario: Class<out Scenario>,
         load: VirtualUserLoad,
+        jmeterLoad: VirtualUserLoad,
         seed: Long,
         diagnosticsLimit: Int,
         browser: Class<out Browser>
@@ -76,6 +83,7 @@ class VirtualUserBehavior private constructor(
         help = false,
         scenario = scenario,
         load = load,
+        jmeterLoad = load,
         seed = seed,
         diagnosticsLimit = diagnosticsLimit,
         browser = browser
@@ -96,6 +104,8 @@ class VirtualUserBehavior private constructor(
         private var scenario: Class<out Scenario>
     ) {
         private var load: VirtualUserLoad = VirtualUserLoad.Builder().build()
+        private var jmeterLoadEnabled : Boolean = false
+        private var jmeterLoad: VirtualUserLoad = VirtualUserLoad.Builder().build()
         private var seed: Long = 12345
         private var diagnosticsLimit: Int = 16
         private var browser: Class<out Browser> = HeadlessChromeBrowser::class.java
@@ -104,6 +114,8 @@ class VirtualUserBehavior private constructor(
 
         fun scenario(scenario: Class<out Scenario>) = apply { this.scenario = scenario }
         fun load(load: VirtualUserLoad) = apply { this.load = load }
+        fun jmeterLoad(load: VirtualUserLoad) = apply { this.jmeterLoad = load }
+        fun jmeterLoadEnabled(enable: Boolean) = apply { this.jmeterLoadEnabled = enable }
         fun seed(seed: Long) = apply { this.seed = seed }
         fun diagnosticsLimit(diagnosticsLimit: Int) = apply { this.diagnosticsLimit = diagnosticsLimit }
         fun browser(browser: Class<out Browser>) = apply { this.browser = browser }
@@ -128,6 +140,8 @@ class VirtualUserBehavior private constructor(
             help = false,
             scenario = scenario,
             load = load,
+            jmeterLoadEnabled = jmeterLoadEnabled,
+            jmeterLoad = jmeterLoad,
             seed = seed,
             diagnosticsLimit = diagnosticsLimit,
             browser = browser,

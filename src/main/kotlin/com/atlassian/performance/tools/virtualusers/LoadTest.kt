@@ -12,6 +12,7 @@ import com.atlassian.performance.tools.jiraactions.api.scenario.Scenario
 import com.atlassian.performance.tools.virtualusers.api.VirtualUserOptions
 import com.atlassian.performance.tools.virtualusers.api.browsers.Browser
 import com.atlassian.performance.tools.virtualusers.api.diagnostics.*
+import com.atlassian.performance.tools.virtualusers.jmeter.JmeterLoadGenerator
 import com.atlassian.performance.tools.virtualusers.lib.jvmtasks.ResultTimer
 import com.atlassian.performance.tools.virtualusers.measure.JiraNodeCounter
 import com.atlassian.performance.tools.virtualusers.measure.WebJiraNode
@@ -47,6 +48,8 @@ internal class LoadTest(
     private val diagnosisLimit = DiagnosisLimit(behavior.diagnosticsLimit)
     private val scenario = behavior.scenario.getConstructor().newInstance() as Scenario
     private val browser = behavior.browser.getConstructor().newInstance() as Browser
+    private val jmeterLoadGenerator = JmeterLoadGenerator(options)
+
     private val effectiveUserGenerator = if (options.behavior.createUsers) {
         userGenerator
     } else {
@@ -66,6 +69,7 @@ internal class LoadTest(
         Thread.sleep(load.hold.toMillis())
         workspace.toFile().ensureDirectory()
         setUpJira()
+        setUpJmeterLoadGenerator()
         applyLoad()
         val nodesDump = workspace.resolve("nodes.csv")
         nodesDump.toFile().bufferedWriter().use {
@@ -96,7 +100,13 @@ internal class LoadTest(
         }
     }
 
+    private fun setUpJmeterLoadGenerator() {
+        jmeterLoadGenerator.setup()
+    }
+
     private fun applyLoad() {
+        //start jmeter load generator
+        jmeterLoadGenerator.run()
         val virtualUsers = load.virtualUsers
         val finish = load.ramp + load.flat
         val loadPool = ThreadPoolExecutor(

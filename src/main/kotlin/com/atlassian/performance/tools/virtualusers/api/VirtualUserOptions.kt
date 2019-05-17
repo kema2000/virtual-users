@@ -144,6 +144,12 @@ class VirtualUserOptions(
         const val rampParameter = "ramp"
         const val flatParameter = "flat"
         const val maxOverallLoadParameter = "max-overall-load"
+        const val jmeterEnabled = "jmeter-load"
+        const val jmeterVirtualUsersParameter = "jmeter-virtual-users"
+        const val jmeterHoldParameter = "jmeter-hold"
+        const val jmeterRampParameter = "jmeter-ramp"
+        const val jmeterFlatParameter = "jmeter-flat"
+        const val jmeterMaxOverallLoadParameter = "jmeter-max-overall-load"
         const val scenarioParameter = "scenario"
         const val browserParameter = "browser"
         const val seedParameter = "seed"
@@ -222,6 +228,51 @@ class VirtualUserOptions(
                     .hasArg()
                     .desc(
                         "Maximum action rate for each VU throughout the entire duration." +
+                            " Format: <decimal real number>/<ISO-8601 duration>"
+                    )
+                    .build()
+            )
+            .addOption(
+                Option.builder()
+                    .longOpt(jmeterEnabled)
+                    .hasArg(true)
+                    .desc("Enable Jmeter load")
+                    .build()
+            )
+            .addOption(
+                Option.builder()
+                    .longOpt(jmeterVirtualUsersParameter)
+                    .hasArg(true)
+                    .desc("<Jmeter> Number of virtual users to execute.")
+                    .build()
+            )
+            .addOption(
+                Option.builder()
+                    .longOpt(jmeterHoldParameter)
+                    .hasArg()
+                    .desc("<Jmeter> Initial hold duration in ISO-8601 format")
+                    .build()
+            )
+            .addOption(
+                Option.builder()
+                    .longOpt(jmeterRampParameter)
+                    .hasArg()
+                    .desc("<Jmeter> Load ramp duration in ISO-8601 format")
+                    .build()
+            )
+            .addOption(
+                Option.builder()
+                    .longOpt(jmeterFlatParameter)
+                    .hasArg()
+                    .desc("<Jmeter> Flat load duration in ISO-8601 format")
+                    .build()
+            )
+            .addOption(
+                Option.builder()
+                    .longOpt(jmeterMaxOverallLoadParameter)
+                    .hasArg()
+                    .desc(
+                        "<Jmeter> Maximum action rate for each VU throughout the entire duration." +
                             " Format: <decimal real number>/<ISO-8601 duration>"
                     )
                     .build()
@@ -308,6 +359,12 @@ class VirtualUserOptions(
             rampParameter to behavior.load.ramp,
             flatParameter to behavior.load.flat,
             maxOverallLoadParameter to behavior.load.maxOverallLoad.let { "${it.change}/${it.time}" },
+            jmeterEnabled to behavior.jmeterLoadEnabled,
+            jmeterVirtualUsersParameter to behavior.jmeterLoad.virtualUsers,
+            jmeterHoldParameter to behavior.jmeterLoad.hold,
+            jmeterRampParameter to behavior.jmeterLoad.ramp,
+            jmeterFlatParameter to behavior.jmeterLoad.flat,
+            jmeterMaxOverallLoadParameter to behavior.jmeterLoad.maxOverallLoad.let { "${it.change}/${it.time}" },
             scenarioParameter to behavior.scenario.canonicalName,
             diagnosticsLimitParameter to behavior.diagnosticsLimit,
             seedParameter to behavior.seed,
@@ -362,6 +419,17 @@ class VirtualUserOptions(
                 .getOptionValue(maxOverallLoadParameter)
                 ?.let { it.split('/') }
                 ?.let { (actions, time) -> TemporalRate(actions.toDouble(), Duration.parse(time)) }
+
+            val jmeterLoadEnabled = commandLine.getOptionValue(jmeterEnabled).toBoolean()
+            val jmeterVirtualUsers = commandLine.getOptionValue(jmeterVirtualUsersParameter).toInt()
+            val jmeterHold = Duration.parse(commandLine.getOptionValue(jmeterHoldParameter))
+            val jmeterRamp = Duration.parse(commandLine.getOptionValue(jmeterRampParameter))
+            val jmeterFlat = Duration.parse(commandLine.getOptionValue(jmeterFlatParameter))
+            val jmeterMaxOverallLoad = commandLine
+                .getOptionValue(jmeterMaxOverallLoadParameter)
+                ?.let { it.split('/') }
+                ?.let { (actions, time) -> TemporalRate(actions.toDouble(), Duration.parse(time)) }
+
             val diagnosticsLimit = commandLine.getOptionValue(diagnosticsLimitParameter).toInt()
             val seed = commandLine.getOptionValue(seedParameter).toLong()
             val skipSetup = commandLine.hasOption(skipSetupParameter)
@@ -384,6 +452,16 @@ class VirtualUserOptions(
                             .ramp(ramp)
                             .flat(flat)
                             .let { if (maxOverallLoad != null) it.maxOverallLoad(maxOverallLoad) else it }
+                            .build()
+                    )
+                    .jmeterLoadEnabled(jmeterLoadEnabled)
+                    .jmeterLoad(
+                        VirtualUserLoad.Builder()
+                            .virtualUsers(jmeterVirtualUsers)
+                            .hold(jmeterHold)
+                            .ramp(jmeterRamp)
+                            .flat(jmeterFlat)
+                            .let { if (jmeterMaxOverallLoad != null) it.maxOverallLoad(jmeterMaxOverallLoad) else it }
                             .build()
                     )
                     .skipSetup(skipSetup)

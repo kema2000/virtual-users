@@ -29,6 +29,26 @@ configurations.all {
                 "org.rnorth.visible-assertions:visible-assertions" -> useVersion("2.1.2")
                 "net.java.dev.jna:jna-platform" -> useVersion("5.2.0")
                 "net.java.dev.jna:jna" -> useVersion("5.2.0")
+                "com.google.guava:guava" -> useVersion("23.6-jre")
+                "org.apache.logging.log4j:log4j-api" -> useVersion("2.11.1")
+                "org.apache.logging.log4j:log4j-core" -> useVersion("2.11.1")
+                "org.apache.logging.log4j:log4j-slf4j-impl" -> useVersion("2.11.1")
+                "org.ow2.asm:asm" -> useVersion("7.0")
+                "commons-io:commons-io" -> useVersion("2.6")
+                "org.apache.commons:commons-lang3" -> useVersion("3.8.1")
+                "org.apache.httpcomponents:httpclient" -> useVersion("4.5.7")
+                "org.apache.httpcomponents:httpmime" -> useVersion("4.5.7")
+                "org.apache.httpcomponents:httpcore" -> useVersion("4.4.11")
+                "org.apache.httpcomponents:httpcore-nio" -> useVersion("4.4.11")
+                "com.fasterxml.jackson.core:jackson-databind" -> useVersion("2.9.8")
+                "com.fasterxml.jackson.core:jackson-annotations" -> useVersion("2.9.8")
+                "com.fasterxml.jackson.core:jackson-core" -> useVersion("2.9.8")
+                "xml-apis:xml-apis" -> useVersion("1.4.01")
+                "org.jsoup:jsoup" -> useVersion("1.11.3")
+                "com.helger:ph-commons" -> useVersion("9.2.1")
+                "commons-logging:commons-logging" -> useVersion("1.2")
+                "javax.ws.rs:javax.ws.rs-api" -> useVersion("2.1.1")
+                "org.slf4j:jcl-over-slf4j" -> useVersion("1.7.25")
             }
             when (requested.group) {
                 "org.jetbrains.kotlin" -> useVersion(kotlinVersion)
@@ -48,8 +68,8 @@ listOf(
         it.resolutionStrategy {
             eachDependency {
                 when (requested.module.toString()) {
-                    "org.apache.httpcomponents:httpclient" -> useVersion("4.5.5")
-                    "org.apache.httpcomponents:httpcore" -> useVersion("4.4.6")
+                    "org.apache.httpcomponents:httpclient" -> useVersion("4.5.7")
+                    "org.apache.httpcomponents:httpcore" -> useVersion("4.4.11")
                     "com.google.guava:guava" -> useVersion("23.6-jre")
                     "org.codehaus.plexus:plexus-utils" -> useVersion("3.1.0")
                     "org.jsoup:jsoup" -> useVersion("1.10.2")
@@ -70,6 +90,8 @@ tasks.getByName("shadowJar", ShadowJar::class).apply {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/org.apache.jmeter/ApacheJMeter_http
+    compile("org.apache.jmeter:ApacheJMeter_http:5.1.1")
     api("com.atlassian.performance.tools:jira-actions:[2.2.0,4.0.0)")
     api("com.github.stephenc.jcip:jcip-annotations:1.0-1")
 
@@ -81,7 +103,7 @@ dependencies {
     implementation("org.apache.commons:commons-math3:3.6.1")
     webdriver().forEach { implementation(it) }
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-    implementation("org.apache.commons:commons-csv:1.3")
+    implementation("org.apache.commons:commons-csv:1.6")
     implementation("commons-cli:commons-cli:1.4")
 
     log4jCore().forEach { implementation(it) }
